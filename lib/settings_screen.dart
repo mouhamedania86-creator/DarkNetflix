@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'api.dart';
 import 'home_screen.dart';
+import 'history_screen.dart';
 import 'login_screen.dart';
 import 'notifier.dart';
 import 'store.dart';
@@ -122,6 +123,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text(S.t('language')),
             subtitle: Text(S.supported[S.lang.value] ?? ''),
             onTap: _pickLanguage,
+          ),
+          ListTile(
+            leading: const Icon(Icons.history),
+            title: const Text('سجل المشاهدة'),
+            subtitle: const Text('استكمال المحتوى أو إزالة عناصر من السجل'),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryScreen())),
           ),
           ListTile(
             leading: const Icon(Icons.event_available),
