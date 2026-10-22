@@ -13,6 +13,7 @@ import 'device.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 import 'notifier.dart';
+import 'onboarding_screen.dart';
 import 'store.dart';
 import 'strings.dart';
 
@@ -74,12 +75,12 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           brightness: Brightness.dark,
           useMaterial3: true,
-          scaffoldBackgroundColor: const Color(0xFF090909),
+          scaffoldBackgroundColor: const Color(0xFF0F172A),
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFFE50914),
+            seedColor: const Color(0xFF14B8A6),
             brightness: Brightness.dark,
           ),
-          appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF090909), foregroundColor: Colors.white, centerTitle: false, elevation: 0),
+          appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF0F172A)),
         ),
         builder: (context, child) => Directionality(
           textDirection: lang == 'ar' ? TextDirection.rtl : TextDirection.ltr,
@@ -139,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => XtreamAPI.instance.isLoggedIn ? const HomeScreen() : const LoginScreen(),
+          builder: (_) => const OnboardingGate(),
         ),
       );
     });
