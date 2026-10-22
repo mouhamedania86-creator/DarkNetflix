@@ -71,7 +71,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                       for (final r in _reminders)
                         ListTile(
-                          leading: const Icon(Icons.alarm, color: Color(0xFF14B8A6)),
+                          leading: const Icon(Icons.alarm, color: Color(0xFFE50914)),
                           title: Text(r.title),
                           subtitle: Text(fmtDate(DateTime.fromMillisecondsSinceEpoch(r.dateMs))),
                           trailing: IconButton(
@@ -89,7 +89,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ListTile(
                         leading: Icon(
                           n.read ? Icons.notifications_none : Icons.notifications_active,
-                          color: n.read ? Colors.grey : const Color(0xFF14B8A6),
+                          color: n.read ? Colors.grey : const Color(0xFFE50914),
                         ),
                         title: Text(n.title, style: TextStyle(fontWeight: n.read ? FontWeight.normal : FontWeight.bold)),
                         subtitle: Text('${n.body}\n${_time(n.ts)}'),
