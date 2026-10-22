@@ -57,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.play_circle_fill, size: 72, color: Color(0xFF14B8A6)),
+                const Icon(Icons.play_circle_fill, size: 72, color: Color(0xFFE50914)),
                 const SizedBox(height: 8),
                 const Text('MovieFlix',
                     textAlign: TextAlign.center,
