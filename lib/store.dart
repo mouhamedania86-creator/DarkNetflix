@@ -182,6 +182,26 @@ class Store {
   static final ValueNotifier<int> unread = ValueNotifier<int>(0);
   static final ValueNotifier<int> historyVersion = ValueNotifier<int>(0);
 
+  // سجل البحث المحلي، الأحدث أولاً وبحد أقصى 20 عملية.
+  static Future<List<String>> searchHistory() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getStringList('search_history') ?? <String>[];
+  }
+
+  static Future<void> addSearchQuery(String query) async {
+    final q = query.trim();
+    if (q.isEmpty) return;
+    final p = await SharedPreferences.getInstance();
+    final list = p.getStringList('search_history') ?? <String>[];
+    list.removeWhere((x) => x.toLowerCase() == q.toLowerCase());
+    list.insert(0, q);
+    await p.setStringList('search_history', list.take(20).toList());
+  }
+
+  static Future<void> clearSearchHistory() async {
+    await (await SharedPreferences.getInstance()).remove('search_history');
+  }
+
   // 👈 ضع مفتاح TMDB الخاص بك هنا مباشرة
   // استبدل النص التالي بالمفتاح الذي حصلت عليه من themoviedb.org
   static const String _tmdbApiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYjUyNWI2MDUwOGM1NWMxY2Y4ODE5Y2Y2MjcyOGIwNCIsIm5iZiI6MTc5MjU3NjM1NC45ODMsInN1YiI6IjZhZDg4YjYyMWZlYWIxYjkxMzc2NjAwZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.X1AdjuA9II2XNMBF92LhaCkQQfc18tA6FYyqeRdWj0g';
@@ -354,7 +374,7 @@ class Store {
 
   static Future<void> clearUserData() async {
     final p = await SharedPreferences.getInstance();
-    for (final k in ['favorites', 'history', 'inbox', 'reminders', 'seen_ids']) {
+    for (final k in ['favorites', 'history', 'inbox', 'reminders', 'seen_ids', 'search_history']) {
       await p.remove(k);
     }
     unread.value = 0;
