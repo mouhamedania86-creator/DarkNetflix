@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MovieFlix'),
+        title: const Text('MOVIEFLIX', style: TextStyle(color: Color(0xFFE50914), fontWeight: FontWeight.w900, letterSpacing: 1.4, fontSize: 22)),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ? Row(
               children: [
                 NavigationRail(
-                  backgroundColor: const Color(0xFF1E293B),
+                  backgroundColor: const Color(0xFF101116),
                   selectedIndex: _index,
                   onDestinationSelected: _select,
                   labelType: NavigationRailLabelType.all,
@@ -117,8 +117,8 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: wide
           ? null
           : BottomNavigationBar(
-              backgroundColor: const Color(0xFF1E293B),
-              selectedItemColor: const Color(0xFF14B8A6),
+              backgroundColor: const Color(0xFF101116),
+              selectedItemColor: const Color(0xFFE50914),
               unselectedItemColor: Colors.grey,
               type: BottomNavigationBarType.fixed,
               currentIndex: _index,
@@ -467,12 +467,13 @@ class _HeroCarouselState extends State<HeroCarousel> {
       children: [
         FilledButton.icon(
           onPressed: () => type == 'vod' ? playMovie(context, item) : openItem(context, item, type),
-          icon: const Icon(Icons.play_arrow),
-          label: Text(S.t('play')),
+          icon: const Icon(Icons.play_arrow, size: 22),
+          label: Text(S.t('play'), style: const TextStyle(fontWeight: FontWeight.w800)),
         ),
         const SizedBox(width: 10),
         OutlinedButton.icon(
           onPressed: () => openItem(context, item, type),
+          style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white38)),
           icon: const Icon(Icons.info_outline),
           label: Text(S.t('info')),
         ),
@@ -490,9 +491,18 @@ class _HeroCarouselState extends State<HeroCarousel> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0x66000000), Colors.transparent, Color(0xFF0F172A)],
-              stops: [0, 0.4, 1],
+              colors: [Color(0xAA050505), Color(0x22050505), Color(0xF208090D)],
+              stops: [0, 0.32, 1],
             ),
+          ),
+        ),
+        Positioned(
+          top: 18,
+          left: 18,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(color: const Color(0xFFE50914), borderRadius: BorderRadius.circular(4)),
+            child: const Text('FEATURED', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
           ),
         ),
         Positioned(
@@ -507,10 +517,10 @@ class _HeroCarouselState extends State<HeroCarousel> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 27, height: 1.05, letterSpacing: -0.4, fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 4),
-              Text(S.t(type == 'vod' ? 'movies' : 'series'), style: const TextStyle(color: Colors.grey)),
+              Text(type == 'vod' ? 'MOVIE  •  مختارات لك' : 'SERIES  •  تابع الحكاية', style: const TextStyle(color: Color(0xFFE50914), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.0)),
               const SizedBox(height: 12),
               _buttons(item, type, MainAxisAlignment.center),
             ],
@@ -522,7 +532,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
 
   Widget _wide(dynamic item, String type, String name) {
     return Container(
-      color: const Color(0xFF111827),
+      color: const Color(0xFF101116),
       padding: const EdgeInsets.fromLTRB(48, 24, 48, 36),
       child: Row(
         children: [
@@ -532,12 +542,12 @@ class _HeroCarouselState extends State<HeroCarousel> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(S.t(type == 'vod' ? 'movies' : 'series'),
-                    style: const TextStyle(color: Color(0xFF14B8A6), fontSize: 16)),
+                    style: const TextStyle(color: Color(0xFFE50914), fontSize: 16)),
                 const SizedBox(height: 8),
                 Text(name,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(fontSize: 38, height: 1.05, letterSpacing: -0.8, fontWeight: FontWeight.w900)),
                 const SizedBox(height: 20),
                 _buttons(item, type, MainAxisAlignment.start),
               ],
@@ -547,7 +557,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
           AspectRatio(
             aspectRatio: 2 / 3,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               child: Poster(url: posterOf(item), fit: BoxFit.cover),
             ),
           ),
@@ -572,7 +582,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
     final n = widget.entries.length;
     final wide = MediaQuery.of(context).size.width >= 700;
     return SizedBox(
-      height: wide ? 380 : 440,
+      height: wide ? 420 : 470,
       child: Stack(
         children: [
           Listener(
@@ -598,7 +608,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
                   width: i == _page ? 18 : 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: i == _page ? const Color(0xFF14B8A6) : Colors.white38,
+                    color: i == _page ? const Color(0xFFE50914) : Colors.white38,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -623,6 +633,7 @@ class _CategoryTabState extends State<CategoryTab> {
   final api = XtreamAPI.instance;
   List<dynamic> _cats = [], _items = [];
   String? _cat;
+  String _sort = 'popular';
   bool _loading = true, _error = false;
 
   @override
@@ -641,6 +652,7 @@ class _CategoryTabState extends State<CategoryTab> {
     try {
       final l = await api.getStreams(widget.type, categoryId: _cat);
       if (!mounted) return;
+      _sortItems(l);
       setState(() {
         _items = l;
         _loading = false;
@@ -653,6 +665,25 @@ class _CategoryTabState extends State<CategoryTab> {
         });
       }
     }
+  }
+
+  void _sortItems(List<dynamic> items) {
+    int numValue(dynamic item, String key) => int.tryParse('${item[key] ?? 0}') ?? 0;
+    double rating(dynamic item) => double.tryParse('${item['rating'] ?? item['rating_5based'] ?? 0}') ?? 0;
+    switch (_sort) {
+      case 'name': items.sort((a, b) => '${a['name'] ?? ''}'.toLowerCase().compareTo('${b['name'] ?? ''}'.toLowerCase())); break;
+      case 'year': items.sort((a, b) => numValue(b, 'year').compareTo(numValue(a, 'year'))); break;
+      case 'rating': items.sort((a, b) => rating(b).compareTo(rating(a))); break;
+      default: items.sort((a, b) => numValue(b, 'added').compareTo(numValue(a, 'added')));
+    }
+  }
+
+  void _changeSort(String? value) {
+    if (value == null) return;
+    setState(() {
+      _sort = value;
+      _sortItems(_items);
+    });
   }
 
   void _select(String? id) {
@@ -668,6 +699,26 @@ class _CategoryTabState extends State<CategoryTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(children: [
+            const Icon(Icons.sort, size: 18, color: Colors.white70),
+            const SizedBox(width: 8),
+            const Text('ترتيب:', style: TextStyle(color: Colors.white70)),
+            const SizedBox(width: 8),
+            DropdownButton<String>(
+              value: _sort,
+              dropdownColor: const Color(0xFF18191F),
+              items: const [
+                DropdownMenuItem(value: 'popular', child: Text('الأحدث / المضاف')),
+                DropdownMenuItem(value: 'name', child: Text('الاسم')),
+                DropdownMenuItem(value: 'year', child: Text('السنة')),
+                DropdownMenuItem(value: 'rating', child: Text('التقييم')),
+              ],
+              onChanged: _changeSort,
+            ),
+          ]),
+        ),
         if (_cats.isNotEmpty)
           SizedBox(
             height: 50,
@@ -730,14 +781,18 @@ class _FavoritesTabState extends State<FavoritesTab> {
   }
 }
 
-// ======================= البحث =======================
+// ======================= بحث فوري + سجل البحث =======================
 class ItemSearchDelegate extends SearchDelegate<void> {
   @override
   String get searchFieldLabel => S.t('search');
 
   @override
   List<Widget> buildActions(BuildContext context) => [
-        if (query.isNotEmpty) IconButton(icon: const Icon(Icons.clear), onPressed: () => query = ''),
+        IconButton(
+          tooltip: 'مسح البحث',
+          icon: const Icon(Icons.clear),
+          onPressed: () => query = '',
+        ),
       ];
 
   @override
@@ -745,11 +800,73 @@ class ItemSearchDelegate extends SearchDelegate<void> {
       IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => close(context, null));
 
   @override
-  Widget buildSuggestions(BuildContext context) => Center(child: Text(S.t('search_prompt')));
+  Widget buildSuggestions(BuildContext context) {
+    if (query.trim().length >= 2) {
+      return FutureBuilder<List<Map<String, dynamic>>>(
+        future: XtreamAPI.instance.search(query),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(child: ShimmerLoading(itemCount: 3));
+          }
+          final items = snap.data ?? [];
+          if (items.isEmpty) return Center(child: Text(S.t('search_none')));
+          return ListView.builder(
+            itemCount: items.length.clamp(0, 30).toInt(),
+            itemBuilder: (context, i) {
+              final item = items[i];
+              final type = (item['_type'] ?? 'vod').toString();
+              return ListTile(
+                leading: SizedBox(width: 48, child: Poster(url: posterOf(item))),
+                title: Text((item['name'] ?? '').toString(), maxLines: 1, overflow: TextOverflow.ellipsis),
+                subtitle: Text(type == 'series' ? S.t('series') : type == 'live' ? S.t('live') : S.t('movies')),
+                onTap: () async {
+                  await Store.addSearchQuery(query);
+                  close(context, null);
+                  openItem(context, item, type);
+                },
+              );
+            },
+          );
+        },
+      );
+    }
+    return FutureBuilder<List<String>>(
+      future: Store.searchHistory(),
+      builder: (context, snap) {
+        final history = snap.data ?? <String>[];
+        if (history.isEmpty) return Center(child: Text(S.t('search_prompt')));
+        return ListView(
+          children: [
+            ListTile(
+              title: const Text('عمليات البحث الأخيرة'),
+              trailing: TextButton(
+                onPressed: () async {
+                  await Store.clearSearchHistory();
+                  showSuggestions(context);
+                },
+                child: const Text('مسح'),
+              ),
+            ),
+            for (final q in history)
+              ListTile(
+                leading: const Icon(Icons.history),
+                title: Text(q),
+                onTap: () { query = q; showResults(context); },
+                trailing: IconButton(
+                  icon: const Icon(Icons.north_west),
+                  onPressed: () { query = q; showSuggestions(context); },
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget buildResults(BuildContext context) {
     if (query.trim().length < 2) return Center(child: Text(S.t('search_min')));
+    Store.addSearchQuery(query);
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: XtreamAPI.instance.search(query),
       builder: (context, snap) {
