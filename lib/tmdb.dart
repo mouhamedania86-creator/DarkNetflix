@@ -75,6 +75,47 @@ class Tmdb {
     );
   }
 
+  /// يطابق عنوان Xtream مع TMDB ثم يجلب الممثلين والتريلر والأعمال المشابهة.
+  /// يرجع null إذا لم توجد مطابقة أو تعذر الاتصال، دون التأثير على تشغيل المحتوى.
+  static Future<Map<String, dynamic>?> enrichTitle(
+      String key, String title, String type, String lang) async {
+    if (key.trim().isEmpty || title.trim().isEmpty) return null;
+    final kind = type == 'series' ? 'tv' : 'movie';
+    try {
+      final matches = await _get(key, 'search/$kind', {
+        'query': title,
+        'language': lang,
+        'include_adult': 'false',
+        'page': '1',
+      });
+      if (matches.isEmpty) return null;
+      final normalized = title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9ا-ي ]'), '').trim();
+      dynamic best = matches.first;
+      for (final m in matches) {
+        final candidate = (m['title'] ?? m['name'] ?? '').toString().toLowerCase().trim();
+        if (candidate == normalized || candidate == title.toLowerCase().trim()) {
+          best = m;
+          break;
+        }
+      }
+      final id = (best['id'] ?? 0).toString();
+      if (id == '0') return null;
+      final detailUri = Uri.https('api.themoviedb.org', '/3/$kind/$id', {
+        'language': lang,
+        'append_to_response': 'credits,videos,similar',
+        if (!key.startsWith('eyJ')) 'api_key': key,
+      });
+      final response = await http.get(detailUri,
+          headers: key.startsWith('eyJ') ? {'Authorization': 'Bearer $key'} : null)
+          .timeout(const Duration(seconds: 15));
+      if (response.statusCode != 200) return null;
+      final decoded = json.decode(utf8.decode(response.bodyBytes));
+      return decoded is Map<String, dynamic> ? decoded : Map<String, dynamic>.from(decoded as Map);
+    } catch (_) {
+      return null;
+    }
+  }
+
   static Future<List<Upcoming>> upcoming(String key, String lang) async {
     final now = DateTime.now();
     final from = _d(now.add(const Duration(days: 1)));
