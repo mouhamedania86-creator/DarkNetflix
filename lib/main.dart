@@ -75,12 +75,12 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           brightness: Brightness.dark,
           useMaterial3: true,
-          scaffoldBackgroundColor: const Color(0xFF0F172A),
+          scaffoldBackgroundColor: const Color(0xFF08090D),
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF14B8A6),
+            seedColor: const Color(0xFFE50914),
             brightness: Brightness.dark,
           ),
-          appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF0F172A)),
+          appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF08090D), surfaceTintColor: Colors.transparent, elevation: 0, centerTitle: false),
         ),
         builder: (context, child) => Directionality(
           textDirection: lang == 'ar' ? TextDirection.rtl : TextDirection.ltr,
@@ -166,7 +166,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF14B8A6)),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE50914)),
                     onPressed: () {
                       launchUrl(Uri.parse(_updateUrl), mode: LaunchMode.externalApplication);
                     },
@@ -188,7 +188,7 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.play_circle_fill, size: 90, color: Color(0xFF14B8A6)),
+              const Icon(Icons.play_circle_fill, size: 90, color: Color(0xFFE50914)),
               const SizedBox(height: 16),
               const Text('MovieFlix', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
               if (initErrors.isNotEmpty) ...[
