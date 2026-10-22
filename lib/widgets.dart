@@ -148,7 +148,7 @@ class _TappableState extends State<Tappable> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(widget.radius + 2),
             border: Border.all(
-              color: _focused ? const Color(0xFF14B8A6) : Colors.transparent,
+              color: _focused ? const Color(0xFFE50914) : Colors.transparent,
               width: 3,
             ),
           ),
@@ -244,7 +244,7 @@ class PosterCard extends StatelessWidget {
                       right: 6,
                       child: Container(
                         padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(color: Color(0xFF14B8A6), shape: BoxShape.circle),
+                        decoration: const BoxDecoration(color: Color(0xFFE50914), shape: BoxShape.circle),
                         child: const Icon(Icons.check, size: 14, color: Colors.white),
                       ),
                     ),
