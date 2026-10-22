@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MovieFlix', style: TextStyle(color: Color(0xFFE50914), fontWeight: FontWeight.w900, letterSpacing: 0.2)),
+        title: const Text('MovieFlix'),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ? Row(
               children: [
                 NavigationRail(
-                  backgroundColor: const Color(0xFF111111),
+                  backgroundColor: const Color(0xFF1E293B),
                   selectedIndex: _index,
                   onDestinationSelected: _select,
                   labelType: NavigationRailLabelType.all,
@@ -117,8 +117,8 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: wide
           ? null
           : BottomNavigationBar(
-              backgroundColor: const Color(0xFF111111),
-              selectedItemColor: const Color(0xFFE50914),
+              backgroundColor: const Color(0xFF1E293B),
+              selectedItemColor: const Color(0xFF14B8A6),
               unselectedItemColor: Colors.grey,
               type: BottomNavigationBarType.fixed,
               currentIndex: _index,
@@ -286,21 +286,6 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // Xtream providers do not expose a universal view-count field. Prefer
-  // provider rating when present, then fall back to recently added items.
-  List<dynamic> _popularItems(List<dynamic> items) {
-    final list = List<dynamic>.from(items);
-    double score(dynamic item) {
-      for (final key in ['rating', 'rating_5based', 'vote_average', 'views']) {
-        final value = double.tryParse('${item[key] ?? ''}');
-        if (value != null && value > 0) return value;
-      }
-      return double.tryParse('${item['added'] ?? ''}') ?? 0;
-    }
-    list.sort((a, b) => score(b).compareTo(score(a)));
-    return list.take(15).toList();
-  }
-
   List<Widget> _categoryRows(List<dynamic> items, List<dynamic> cats, String type, int maxRows) {
     final byCat = <String, List<dynamic>>{};
     for (final it in items) {
@@ -339,7 +324,7 @@ class _HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return const ShimmerLoading();
     if (_error || (_movies.isEmpty && _series.isEmpty)) {
       return MessageView(
         text: S.t('load_fail'),
@@ -378,11 +363,6 @@ class _HomeTabState extends State<HomeTab> {
                         onTap: () => resumeEntry(context, e),
                       ))
                   .toList(),
-            ),
-          if (_movies.isNotEmpty)
-            _row(
-              'الأكثر مشاهدة',
-              _popularItems(_movies).map<Widget>((it) => PosterCard(item: it, type: 'vod')).toList(),
             ),
           _comingSoon(),
           ..._categoryRows(_movies, _vodCats, 'vod', 4),
@@ -552,7 +532,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(S.t(type == 'vod' ? 'movies' : 'series'),
-                    style: const TextStyle(color: Color(0xFFE50914), fontSize: 16, fontWeight: FontWeight.w700)),
+                    style: const TextStyle(color: Color(0xFF14B8A6), fontSize: 16)),
                 const SizedBox(height: 8),
                 Text(name,
                     maxLines: 3,
@@ -618,7 +598,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
                   width: i == _page ? 18 : 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: i == _page ? const Color(0xFFE50914) : Colors.white38,
+                    color: i == _page ? const Color(0xFF14B8A6) : Colors.white38,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -710,7 +690,7 @@ class _CategoryTabState extends State<CategoryTab> {
           ),
         Expanded(
           child: _loading
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: ShimmerLoading(itemCount: 3))
               : _error
                   ? MessageView(text: S.t('load_fail'), onRetry: () => _select(_cat))
                   : PosterGrid(items: _items, type: widget.type),
@@ -742,7 +722,7 @@ class _FavoritesTabState extends State<FavoritesTab> {
       future: _future,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: ShimmerLoading(itemCount: 3));
         }
         return PosterGrid(items: snap.data ?? [], emptyText: S.t('no_favs'));
       },
@@ -765,23 +745,7 @@ class ItemSearchDelegate extends SearchDelegate<void> {
       IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => close(context, null));
 
   @override
-  Widget buildSuggestions(BuildContext context) {
-    if (query.trim().length < 2) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.search_rounded, size: 42, color: Colors.white38),
-            const SizedBox(height: 12),
-            Text(S.t('search_prompt'), style: const TextStyle(color: Colors.white60)),
-            const SizedBox(height: 8),
-            const Text('ابحث باسم الفيلم أو المسلسل', style: TextStyle(color: Colors.white38, fontSize: 12)),
-          ],
-        ),
-      );
-    }
-    return buildResults(context);
-  }
+  Widget buildSuggestions(BuildContext context) => Center(child: Text(S.t('search_prompt')));
 
   @override
   Widget buildResults(BuildContext context) {
@@ -790,7 +754,7 @@ class ItemSearchDelegate extends SearchDelegate<void> {
       future: XtreamAPI.instance.search(query),
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: ShimmerLoading(itemCount: 3));
         }
         return PosterGrid(items: snap.data ?? [], emptyText: S.t('search_none'));
       },
