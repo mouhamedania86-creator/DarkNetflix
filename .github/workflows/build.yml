@@ -10,8 +10,6 @@ permissions:
 jobs:
   android:
     runs-on: ubuntu-latest
-    # بلا هاد السطر، إلا الـ build تعلق (Gradle download متعطل) كيبقى
-    # كيستنى 6 سوايع كاملة. 90 دقيقة كافية+.
     timeout-minutes: 90
 
     steps:
@@ -43,13 +41,15 @@ jobs:
           test -f android/app/src/main/AndroidManifest.xml
           echo "Android project generated."
 
-      # ⬇️ moved هنا: setup-gradle kيتعرّف على الـ Gradle project من بعد ما
-      # يتولّد، باش يقدر يفعّل cache صح.
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v4
 
       - name: Get dependencies
         run: flutter pub get
+
+      # 👈 توليد أيقونة التطبيق
+      - name: Generate App Icons
+        run: dart run flutter_launcher_icons
 
       - name: Fix Android manifest
         shell: bash
@@ -88,14 +88,12 @@ jobs:
                       1
                   )
 
+          # 👈 الاسم كما طلبت
           s = s.replace('android:label="movieflix"', 'android:label="MovieFlix"')
           p.write_text(s, encoding="utf-8")
           print("Manifest updated.")
           PY
 
-      # THE FIX for:
-      #   > Dependency ':flutter_local_notifications' requires core library
-      #     desugaring to be enabled for :app
       - name: Enable core library desugaring in the app module
         shell: bash
         run: |
@@ -124,21 +122,6 @@ jobs:
           print(f"Patched {patched} plugin build file(s).")
           PY
 
-      # ➕ تشخيص: كيطبع الملف المصلّح كامل، باش تبان فـ log شنو طايب
-      # بالضبط (حتى إلا الـ build طح فـ step لاحق).
-      - name: Show patched Android Gradle config
-        shell: bash
-        run: |
-          echo "===== android/app/build.gradle.kts ====="
-          cat android/app/build.gradle.kts
-          echo
-          echo "===== android/gradle.properties ====="
-          cat android/gradle.properties
-          echo
-          echo "===== flutter / java ====="
-          flutter --version || true
-          java -version 2>&1 || true
-
       - name: Build phone APKs
         run: flutter build apk --release --no-shrink --split-per-abi
 
@@ -148,11 +131,10 @@ jobs:
       - name: Upload APK files
         uses: actions/upload-artifact@v4
         with:
-          name: Luciferplay-APKs
+          name: MovieFlix-APKs
           path: build/app/outputs/flutter-apk/*.apk
           if-no-files-found: error
 
-      # ➕ تشخيص: خрыв حتى إلا الـ build طح، غادي نلقاو كلشي فـ log واحد
       - name: Collect diagnostics
         if: always()
         shell: bash
@@ -162,9 +144,3 @@ jobs:
           echo
           echo "===== AndroidManifest ====="
           cat android/app/src/main/AndroidManifest.xml 2>/dev/null || true
-          echo
-          echo "===== gradle.properties ====="
-          cat android/gradle.properties 2>/dev/null || true
-          echo
-          echo "===== pubspec.lock (plugin versions) ====="
-          grep -A2 -E "^  (flutter_local_notifications|media_kit|media_kit_libs_video|wakelock_plus|device_info_plus):" pubspec.lock 2>/dev/null || true
