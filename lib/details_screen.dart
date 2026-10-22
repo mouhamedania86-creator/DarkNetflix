@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'api.dart';
 import 'episodes.dart';
 import 'player_screen.dart';
 import 'store.dart';
+import 'tmdb.dart';
 import 'strings.dart';
 import 'widgets.dart';
 
@@ -19,6 +21,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   final api = XtreamAPI.instance;
   late final String _id;
   Map<String, dynamic>? _info;
+  Map<String, dynamic>? _tmdbInfo;
   List<Map<String, String>> _epg = [];
   bool _loading = true;
   bool _isFav = false;
@@ -43,6 +46,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
         _epg = await api.getShortEPG(_id);
       }
     } catch (_) {}
+    if (widget.type == 'vod' || widget.type == 'series') {
+      try {
+        final key = await Store.tmdbKey();
+        final name = (widget.item['name'] ?? '').toString();
+        _tmdbInfo = await Tmdb.enrichTitle(key, name, widget.type, S.tmdbLang);
+      } catch (_) {}
+    }
     if (mounted) setState(() => _loading = false);
   }
 
@@ -97,8 +107,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
     final rawInfo = _info?['info'];
     final Map infoMap = rawInfo is Map ? rawInfo : {};
     final title = (infoMap['name'] ?? widget.item['name'] ?? '').toString();
-    final plot = (infoMap['plot'] ?? infoMap['description'] ?? '').toString();
+    final plot = (infoMap['plot'] ?? infoMap['description'] ?? _tmdbInfo?['overview'] ?? '').toString();
     final poster = posterOf(widget.item);
+    final backdropPath = (_tmdbInfo?['backdrop_path'] ?? '').toString();
+    final backdrop = backdropPath.isEmpty ? poster : 'https://image.tmdb.org/t/p/w1280$backdropPath';
 
     return Scaffold(
       body: CustomScrollView(
@@ -109,11 +121,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 color: const Color(0xFF0B1220),
-                child: Poster(
-                  url: poster,
-                  fit: (widget.type == 'live' || MediaQuery.of(context).size.width >= 700)
-                      ? BoxFit.contain
-                      : BoxFit.cover,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Poster(url: backdrop, fit: BoxFit.cover),
+                    const DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(
+                      begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                      colors: [Color(0x22000000), Color(0xFF090909)],
+                    ))),
+                  ],
                 ),
               ),
             ),
@@ -130,12 +146,26 @@ class _DetailsScreenState extends State<DetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text(title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                  if (_tmdbInfo != null) ...[
+                    const SizedBox(height: 8),
+                    Wrap(spacing: 10, runSpacing: 6, children: [
+                      if ((_tmdbInfo!['release_date'] ?? _tmdbInfo!['first_air_date'] ?? '').toString().isNotEmpty)
+                        _metaChip((_tmdbInfo!['release_date'] ?? _tmdbInfo!['first_air_date']).toString().split('-').first),
+                      if (_tmdbInfo!['vote_average'] != null)
+                        _metaChip('★ ${(num.tryParse('${_tmdbInfo!['vote_average']}') ?? 0).toStringAsFixed(1)}/10'),
+                      if (_tmdbInfo!['runtime'] != null && _tmdbInfo!['runtime'] is num && (_tmdbInfo!['runtime'] as num) > 0)
+                        _metaChip('${_tmdbInfo!['runtime']} min'),
+                      if (_tmdbInfo!['number_of_seasons'] != null)
+                        _metaChip('${_tmdbInfo!['number_of_seasons']} seasons'),
+                    ]),
+                  ],
                   if (plot.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Text(plot, style: const TextStyle(color: Colors.grey)),
                   ],
                   const SizedBox(height: 20),
+                  if (_tmdbInfo != null) ..._tmdbSections(),
                   ..._body(title),
                 ],
               ),
@@ -144,6 +174,82 @@ class _DetailsScreenState extends State<DetailsScreen> {
         ],
       ),
     );
+  }
+
+  Widget _metaChip(String text) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(20)),
+        child: Text(text, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+      );
+
+  List<Widget> _tmdbSections() {
+    final info = _tmdbInfo!;
+    final widgets = <Widget>[];
+    final credits = info['credits'];
+    final cast = credits is Map && credits['cast'] is List ? List<dynamic>.from(credits['cast'] as List) : <dynamic>[];
+    if (cast.isNotEmpty) {
+      widgets.add(const SizedBox(height: 20));
+      widgets.add(const Text('طاقم التمثيل', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)));
+      widgets.add(const SizedBox(height: 8));
+      widgets.add(SizedBox(
+        height: 112,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: cast.take(12).length,
+          separatorBuilder: (_, __) => const SizedBox(width: 12),
+          itemBuilder: (context, i) {
+            final person = cast[i] as Map;
+            final profile = (person['profile_path'] ?? '').toString();
+            return SizedBox(width: 82, child: Column(children: [
+              CircleAvatar(radius: 29, backgroundColor: Colors.white12,
+                backgroundImage: profile.isEmpty ? null : NetworkImage('https://image.tmdb.org/t/p/w185$profile'),
+                child: profile.isEmpty ? const Icon(Icons.person) : null),
+              const SizedBox(height: 5),
+              Text((person['name'] ?? '').toString(), maxLines: 2, textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11)),
+            ]));
+          },
+        ),
+      ));
+    }
+    final videos = info['videos'];
+    final results = videos is Map && videos['results'] is List ? List<dynamic>.from(videos['results'] as List) : <dynamic>[];
+    dynamic trailer;
+    for (final v in results) {
+      if (v is Map && v['site'] == 'YouTube' && v['type'] == 'Trailer') { trailer = v; break; }
+    }
+    if (trailer is Map && (trailer['key'] ?? '').toString().isNotEmpty) {
+      widgets.add(const SizedBox(height: 16));
+      widgets.add(OutlinedButton.icon(
+        icon: const Icon(Icons.ondemand_video), label: const Text('مشاهدة التريلر'),
+        onPressed: () => launchUrl(Uri.parse('https://www.youtube.com/watch?v=${trailer['key']}'), mode: LaunchMode.externalApplication),
+      ));
+    }
+    final similar = info['similar'];
+    final sims = similar is Map && similar['results'] is List ? List<dynamic>.from(similar['results'] as List) : <dynamic>[];
+    if (sims.isNotEmpty) {
+      widgets.add(const SizedBox(height: 20));
+      widgets.add(const Text('أعمال مشابهة', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)));
+      widgets.add(const SizedBox(height: 8));
+      widgets.add(SizedBox(height: 160, child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: sims.take(12).length,
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        itemBuilder: (context, i) {
+          final sim = sims[i] as Map;
+          final path = (sim['poster_path'] ?? '').toString();
+          final title = (sim['title'] ?? sim['name'] ?? '').toString();
+          return SizedBox(width: 95, child: Column(children: [
+            Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(7), child: Poster(
+              url: path.isEmpty ? '' : 'https://image.tmdb.org/t/p/w342$path', width: 95, fit: BoxFit.cover))),
+            const SizedBox(height: 5),
+            Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11)),
+          ]));
+        },
+      )));
+    }
+    return widgets;
   }
 
   List<Widget> _body(String title) {
@@ -195,7 +301,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           children: [
             for (final ep in eps[s]!)
               ListTile(
-                leading: const Icon(Icons.play_circle, color: Color(0xFF14B8A6)),
+                leading: const Icon(Icons.play_circle, color: Color(0xFFE50914)),
                 title: Text('${S.t('episode')} ${ep['episode_num'] ?? ''}'),
                 subtitle: (ep['title'] ?? '').toString().isEmpty ? null : Text(ep['title'].toString()),
                 onTap: () {
@@ -221,7 +327,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
       width: double.infinity,
       height: 50,
       child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF14B8A6), foregroundColor: Colors.white),
+        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE50914), foregroundColor: Colors.white),
         onPressed: onPressed,
         icon: const Icon(Icons.play_arrow),
         label: Text(label),
