@@ -7,6 +7,67 @@ import 'player_screen.dart';
 import 'store.dart';
 import 'strings.dart';
 
+/// Placeholder لامع يظهر أثناء تحميل المحتوى بدل دائرة الانتظار.
+class ShimmerLoading extends StatefulWidget {
+  final int itemCount;
+  const ShimmerLoading({super.key, this.itemCount = 5});
+  @override
+  State<ShimmerLoading> createState() => _ShimmerLoadingState();
+}
+
+class _ShimmerLoadingState extends State<ShimmerLoading> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this, duration: const Duration(milliseconds: 1300),
+  )..repeat();
+  @override
+  void dispose() { _controller.dispose(); super.dispose(); }
+
+  Widget _block(double width, double height, {double radius = 8}) => AnimatedBuilder(
+    animation: _controller,
+    builder: (context, child) => ShaderMask(
+      shaderCallback: (bounds) => LinearGradient(
+        begin: Alignment(-1.5 + 3 * _controller.value, 0),
+        end: Alignment(-0.5 + 3 * _controller.value, 0),
+        colors: const [Color(0xFF202733), Color(0xFF3B4656), Color(0xFF202733)],
+        stops: const [0.1, 0.5, 0.9],
+      ).createShader(bounds),
+      blendMode: BlendMode.srcATop,
+      child: child,
+    ),
+    child: Container(width: width, height: height,
+      decoration: BoxDecoration(color: const Color(0xFF202733), borderRadius: BorderRadius.circular(radius))),
+  );
+
+  @override
+  Widget build(BuildContext context) => ListView(
+    padding: const EdgeInsets.all(16),
+    children: [
+      _block(double.infinity, 190, radius: 14),
+      const SizedBox(height: 22),
+      _block(170, 18),
+      const SizedBox(height: 12),
+      SizedBox(height: 218, child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: widget.itemCount,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (_, __) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _block(118, 158, radius: 10), const SizedBox(height: 9), _block(100, 12), const SizedBox(height: 6), _block(70, 10),
+        ]),
+      )),
+      const SizedBox(height: 18),
+      _block(145, 18),
+      const SizedBox(height: 12),
+      SizedBox(height: 218, child: ListView.separated(
+        scrollDirection: Axis.horizontal, itemCount: widget.itemCount,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (_, __) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _block(118, 158, radius: 10), const SizedBox(height: 9), _block(100, 12), const SizedBox(height: 6), _block(70, 10),
+        ]),
+      )),
+    ],
+  );
+}
+
 String posterOf(dynamic item) => (item['stream_icon'] ?? item['cover'] ?? '').toString();
 
 String fmtDate(DateTime? d) {
@@ -87,7 +148,7 @@ class _TappableState extends State<Tappable> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(widget.radius + 2),
             border: Border.all(
-              color: _focused ? const Color(0xFFE50914) : Colors.transparent,
+              color: _focused ? const Color(0xFF14B8A6) : Colors.transparent,
               width: 3,
             ),
           ),
@@ -173,7 +234,7 @@ class PosterCard extends StatelessWidget {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 4,
-                        color: const Color(0xFFE50914),
+                        color: Colors.red,
                         backgroundColor: Colors.black54,
                       ),
                     ),
