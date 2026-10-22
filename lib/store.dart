@@ -225,6 +225,13 @@ class Store {
     return null;
   }
 
+  static Future<void> removeWatch(String key) async {
+    final list = await history();
+    list.removeWhere((x) => x.key == key);
+    await _writeList('history', list.map((x) => x.toJson()).toList());
+    historyVersion.value++;
+  }
+
   static Future<void> saveWatch(WatchEntry e) async {
     final list = await history();
     list.removeWhere((x) => x.key == e.key);
