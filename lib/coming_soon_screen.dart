@@ -109,7 +109,7 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.event, size: 18, color: Color(0xFF14B8A6)),
+                      const Icon(Icons.event, size: 18, color: Color(0xFFE50914)),
                       const SizedBox(width: 6),
                       Text('${S.t('release_date')}: ${fmtDate(u.date)}'),
                       if (days > 0) ...[
@@ -127,7 +127,7 @@ class _ComingSoonScreenState extends State<ComingSoonScreen> {
                     height: 50,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _remind ? Colors.grey[800] : const Color(0xFF14B8A6),
+                        backgroundColor: _remind ? Colors.grey[800] : const Color(0xFFE50914),
                         foregroundColor: Colors.white,
                       ),
                       onPressed: _busy ? null : _toggle,
